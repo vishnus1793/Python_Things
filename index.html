@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF to Speech Converter</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        button { margin-top: 10px; padding: 10px; background-color: blue; color: white; border: none; cursor: pointer; }
+        button:disabled { background-color: grey; }
+    </style>
+</head>
+<body>
+    <h1>PDF to Speech Converter</h1>
+    <input type="file" id="pdfInput" accept="application/pdf">
+    <button id="convertBtn" onclick="uploadFile()">Convert to Speech</button>
+    <br>
+    <audio id="audioPlayer" controls style="display: none;"></audio>
+
+    <script>
+        async function uploadFile() {
+            const fileInput = document.getElementById("pdfInput");
+            if (!fileInput.files.length) {
+                alert("Please select a PDF file first.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+            document.getElementById("convertBtn").disabled = true;
+
+            try {
+                const response = await fetch("http://localhost:5000/upload", {
+                    method: "POST",
+                    body: formData,
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    const audioPlayer = document.getElementById("audioPlayer");
+                    audioPlayer.src = `http://localhost:5000/${data.audio}`;
+                    audioPlayer.style.display = "block";
+                } else {
+                    alert(data.error);
+                }
+            } catch (error) {
+                alert("Error uploading file.");
+            } finally {
+                document.getElementById("convertBtn").disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
